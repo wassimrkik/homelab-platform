@@ -1,0 +1,96 @@
+# --- Kubeconfigs and cluster credentials ---
+kubeconfig
+kubeconfig*
+*.kubeconfig
+.kube/
+rke2.yaml
+**/rke2/config.yaml
+*-token
+*.token
+
+# --- Secrets ---
+# Convention: plaintext secrets never live in the repo. Encrypted SealedSecrets
+# are named *.sealed.yaml and are re-included at the end of this file.
+*.secret.yaml
+*-secret.yaml
+.env
+.env.*
+!.env.example
+# Private key material. Public certs (*.crt, e.g. the homelab CA) are safe to commit.
+*.pem
+*.key
+*.csr
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+age.key
+keys.txt
+.sops.agekey
+
+# --- Helm ---
+charts/*.tgz
+**/charts/*.tgz
+*.tgz
+requirements.lock
+.helm/
+
+# --- Kustomize / rendered output ---
+rendered/
+manifests-out/
+*.rendered.yaml
+
+# --- Terraform / OpenTofu (vSphere provisioning) ---
+.terraform/
+.terraform.lock.hcl.bak
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# --- Ansible ---
+*.retry
+.vault_pass*
+vault-password*
+
+# --- Backups and snapshots ---
+*.db
+etcd-snapshot*
+backups/
+*.bak
+*.backup
+
+# --- Logs and temp files ---
+*.log
+tmp/
+.tmp/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Editors / IDEs ---
+.vscode/
+.idea/
+*.iml
+
+# --- Local tooling ---
+.direnv/
+.envrc.local
+
+# --- Re-includes (must stay last: later patterns win) ---
+# Encrypted SealedSecrets are safe to commit.
+!*.sealed.yaml
+# kubeseal public cert (kubeseal --fetch-cert): it can only encrypt, never decrypt.
+!**/sealed-secrets/pub-cert.pem
