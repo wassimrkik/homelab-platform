@@ -1,0 +1,90 @@
+# --- Kubeconfigs and cluster credentials ---
+kubeconfig
+kubeconfig*
+*.kubeconfig
+.kube/
+rke2.yaml
+**/rke2/config.yaml
+*-token
+*.token
+
+# --- Secrets (commit only encrypted forms: SealedSecrets / SOPS *.enc.yaml) ---
+*.secret.yaml
+*-secret.yaml
+secrets/
+!**/sealed-secrets/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+age.key
+keys.txt
+.sops.agekey
+
+# --- Helm ---
+charts/*.tgz
+**/charts/*.tgz
+*.tgz
+requirements.lock
+.helm/
+
+# --- Kustomize / rendered output ---
+rendered/
+manifests-out/
+*.rendered.yaml
+
+# --- Terraform / OpenTofu (vSphere provisioning) ---
+.terraform/
+.terraform.lock.hcl.bak
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# --- Ansible ---
+*.retry
+.vault_pass*
+vault-password*
+
+# --- Backups and snapshots ---
+*.db
+etcd-snapshot*
+backups/
+*.bak
+*.backup
+
+# --- Logs and temp files ---
+*.log
+tmp/
+.tmp/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Editors / IDEs ---
+.vscode/
+.idea/
+*.iml
+
+# --- Local tooling ---
+.direnv/
+.envrc.local
