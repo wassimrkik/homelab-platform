@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: hello
+  labels:
+    app.kubernetes.io/name: web
+    app.kubernetes.io/part-of: hello
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hello.platform.lab
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  name: http
