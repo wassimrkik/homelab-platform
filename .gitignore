@@ -8,17 +8,17 @@ rke2.yaml
 *-token
 *.token
 
-# --- Secrets (commit only encrypted forms: SealedSecrets / SOPS *.enc.yaml) ---
+# --- Secrets ---
+# Convention: plaintext secrets never live in the repo. Encrypted SealedSecrets
+# are named *.sealed.yaml and are re-included at the end of this file.
 *.secret.yaml
 *-secret.yaml
-secrets/
-!**/sealed-secrets/
 .env
 .env.*
 !.env.example
+# Private key material. Public certs (*.crt, e.g. the homelab CA) are safe to commit.
 *.pem
 *.key
-*.crt
 *.csr
 *.p12
 *.pfx
@@ -88,3 +88,9 @@ Thumbs.db
 # --- Local tooling ---
 .direnv/
 .envrc.local
+
+# --- Re-includes (must stay last: later patterns win) ---
+# Encrypted SealedSecrets are safe to commit.
+!*.sealed.yaml
+# kubeseal public cert (kubeseal --fetch-cert): it can only encrypt, never decrypt.
+!**/sealed-secrets/pub-cert.pem

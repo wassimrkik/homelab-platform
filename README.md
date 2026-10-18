@@ -6,21 +6,42 @@ A GitOps-managed Kubernetes platform running in a homelab, built to mirror a pro
 
 This repo is a hands-on training ground for running Kubernetes the way it runs in production. It exists to:
 
-- **Simulate production.** Use the same building blocks found in real environments: a hardened distribution (RKE2), central cluster management (Rancher), GitOps delivery, ingress, certificates, storage, and observability.
+- **Simulate production.** Use the same building blocks found in real environments: a security-focused distribution (RKE2; the CIS hardening profile is planned but not yet enabled), central cluster management (Rancher), GitOps delivery, ingress, certificates, storage, and observability.
 - **Practise day-to-day operations.** Deploy and upgrade applications, roll back bad releases, scale workloads, rotate certificates, manage RBAC and namespaces, and debug failing pods.
 - **Practise day-2 operations.** Upgrade Kubernetes and Rancher, back up and restore etcd, replace or drain nodes, recover from failures, and tune resource usage.
 - **Keep everything in Git.** Every change to the cluster goes through this repo, so the state of the platform is reviewable, repeatable and recoverable.
 
 ## Stack
 
-| Layer | Tool |
+| Layer | Tool | Status |
+| --- | --- | --- |
+| Hypervisor | VMware vSphere (ESXi) | In place |
+| Kubernetes distribution | RKE2 v1.36 | In place |
+| CNI | Calico | In place |
+| Cluster management | Rancher | In place |
+| GitOps delivery | Argo CD | Planned |
+| Packaging | Helm, Kustomize | Planned |
+| Load balancer | MetalLB | Planned |
+| Ingress | Installed by us (RKE2 built-in ingress disabled) | Planned |
+| Certificates | cert-manager | Planned |
+| Storage | Longhorn | Planned |
+| Secrets | Sealed Secrets | Planned |
+| Observability | Prometheus, Grafana, Loki, Alertmanager | Planned |
+
+## Cluster layout
+
+| Role | Count |
 | --- | --- |
-| Hypervisor | VMware vSphere |
-| Kubernetes distribution | RKE2 |
-| Cluster management | Rancher |
-| GitOps delivery | Argo CD |
-| Packaging | Helm, Kustomize |
-| Observability | Prometheus, Grafana, Loki, Alertmanager |
+| Control plane (RKE2 server) | 1 |
+| Worker (RKE2 agent) | 3 |
+
+- **Hosts:** the 4 node VMs are spread across 2 ESXi hosts.
+- **Kubernetes:** RKE2 v1.36
+- **CNI:** Calico
+- **Ingress:** RKE2's built-in ingress controller is disabled. We install and manage ingress ourselves from this repo.
+- **CIS profile:** not enabled yet (planned).
+
+With a single control plane node, the cluster is not highly available. Losing that node takes down the API server until it is restored from an etcd snapshot. That makes etcd backup and restore a key drill.
 
 ## Repository layout
 
@@ -40,10 +61,18 @@ This repo is a hands-on training ground for running Kubernetes the way it runs i
 
 ## How changes flow
 
-1. Make a change on a branch (new app, updated Helm values, config tweak).
-2. Open a pull request and review the diff.
-3. Merge to `main`.
-4. Argo CD detects the change and syncs it to the cluster.
+1. Create a branch per ticket, named `plat-N-short-name` (for example `plat-0-repo-structure`).
+2. Make the change (new app, updated Helm values, config tweak).
+3. Open a pull request with `Closes #N` in the **body** so the issue is linked and closed on merge.
+4. Get the PR reviewed and approved.
+5. Squash-merge to `main`.
+6. Argo CD detects the change and syncs it to the cluster.
+
+### Rules on `main`
+
+- No direct pushes: every change goes through a pull request.
+- Squash merge only, keeping history linear.
+- The PR title becomes the commit message on `main`, so it must describe the change (for example `docs: add repo structure, README and .gitignore (PLAT-0)`).
 
 Manual `kubectl apply` is reserved for break-glass situations. Anything changed by hand should be committed back to Git afterwards so the cluster and the repo stay in sync.
 
@@ -70,7 +99,13 @@ Manual `kubectl apply` is reserved for break-glass situations. Anything changed 
 
 ## Secrets
 
-Never commit plaintext secrets, kubeconfigs or tokens. Use an encrypted approach (for example Sealed Secrets or SOPS) and commit only the encrypted form. The `.gitignore` blocks common sensitive files, but it is a safety net, not a substitute for care.
+Never commit plaintext secrets, kubeconfigs or tokens. Encrypt secrets with Sealed Secrets and commit only the encrypted form.
+
+- Name encrypted secrets `*.sealed.yaml`. The `.gitignore` allows these even though it blocks `*-secret.yaml` and `*.secret.yaml`.
+- The kubeseal public cert (`sealed-secrets/pub-cert.pem`) is safe to commit, because it can only encrypt.
+- Public CA certificates (`*.crt`) are safe to commit. Private keys (`*.key`, `*.pem`) are blocked.
+
+The `.gitignore` is a safety net, not a substitute for care. Check a new file with `git check-ignore -v <path>` if `git add` seems to skip it.
 
 ## Getting started
 
