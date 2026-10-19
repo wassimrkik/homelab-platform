@@ -1,0 +1,8 @@
+server:
+  enabled: true
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
