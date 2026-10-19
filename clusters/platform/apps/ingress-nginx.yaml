@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd
+  name: ingress-nginx
   namespace: argocd
   # deliberately NO resources-finalizer: deleting this app must not delete Argo CD
 spec:
