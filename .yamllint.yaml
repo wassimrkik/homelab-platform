@@ -1,0 +1,26 @@
+# yamllint config, used by the lefthook pre-commit hook and the
+# "kubernetes" GitHub Actions workflow. Keeps real errors (broken YAML,
+# duplicate keys, bad indentation, missing final newline) and relaxes
+# rules that only enforce style this repo doesn't follow.
+extends: default
+
+ignore: |
+  .git/
+
+rules:
+  # Manifests here don't start with "---"; it adds nothing for one-doc files.
+  document-start: disable
+  # Inline comments explain chart versions and repo URLs, so lines run long.
+  line-length:
+    max: 160
+    level: warning
+  comments:
+    min-spaces-from-content: 1
+  # Accept both "key:\n  - item" and "key:\n- item", but not a mix in one file.
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  # Kubernetes uses true/false; flag yes/no/on/off which YAML 1.1 parsers misread.
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false

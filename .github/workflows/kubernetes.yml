@@ -1,0 +1,62 @@
+name: kubernetes
+
+# Kubernetes checks on every pull request:
+#   yamllint      - YAML syntax and style (.yamllint.yaml)
+#   kubeconform   - manifests in apps/ and clusters/ against the Kubernetes API
+#                   schemas and the CRD catalog (Argo CD Applications, etc.)
+#   helm-render   - render each Argo CD Helm Application with this repo's values
+#                   files and validate the output (scripts/helm-render.sh)
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kubernetes-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  KUBECONFORM_VERSION: "0.8.0"
+  YAMLLINT_VERSION: "1.38.0"
+
+jobs:
+  yamllint:
+    name: yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yamllint
+        run: pipx install "yamllint==${YAMLLINT_VERSION}"
+      - name: Lint YAML
+        run: yamllint --strict --format github .
+
+  kubeconform:
+    name: kubeconform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kubeconform
+      - name: Validate manifests
+        run: scripts/kubeconform.sh
+
+  helm-render:
+    name: helm-render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kubeconform
+      # helm and yq (mikefarah v4) are preinstalled on GitHub's ubuntu runners.
+      - name: Tool versions
+        run: helm version --short && yq --version
+      - name: Render and validate Helm applications
+        run: scripts/helm-render.sh
