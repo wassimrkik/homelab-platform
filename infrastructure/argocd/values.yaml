@@ -1,5 +1,5 @@
 server:
-  enabled: true
+  enabled: true # default true, but adding it here for clarity
 
 dex:
   enabled: false
