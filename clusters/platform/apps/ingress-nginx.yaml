@@ -8,8 +8,8 @@ spec:
   project: default
   sources:
     - repoURL: https://github.com/kubernetes/ingress-nginx
-      chart: argo-cd
-      targetRevision: 10.10.5                 # same version as the bootstrap install
+      chart: ingress-nginx
+      targetRevision: 4.15.1                 # same version as the bootstrap install
       helm:
         releaseName: ingress-nginx                   # same release name as the bootstrap install
         valueFiles:
@@ -26,3 +26,4 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - CreateNamespace=true
