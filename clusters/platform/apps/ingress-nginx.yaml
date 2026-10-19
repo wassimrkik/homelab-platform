@@ -11,7 +11,7 @@ spec:
       chart: argo-cd
       targetRevision: 10.10.5                 # same version as the bootstrap install
       helm:
-        releaseName: argocd                   # same release name as the bootstrap install
+        releaseName: ingress-nginx                   # same release name as the bootstrap install
         valueFiles:
           - $values/infrastructure/ingress-nginx/values.yaml
     - repoURL: https://github.com/wassimrkik/homelab-platform
@@ -19,7 +19,7 @@ spec:
       ref: values                             # makes "$values" point at this repo
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: ingress-nginx
   syncPolicy:
     automated:
       prune: true
