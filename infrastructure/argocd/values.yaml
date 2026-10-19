@@ -1,0 +1,8 @@
+server:
+  enabled: true # default true, but adding it here for clarity
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
