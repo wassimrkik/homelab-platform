@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  # deliberately NO resources-finalizer: deleting this app must not delete Argo CD
+spec:
+  project: default
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 10.10.5                 # same version as the bootstrap install
+      helm:
+        releaseName: argocd                   # same release name as the bootstrap install
+        valueFiles:
+          - $values/infrastructure/argocd/values.yaml
+    - repoURL: https://github.com/wassimrkik/homelab-platform
+      targetRevision: main
+      ref: values                             # makes "$values" point at this repo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
