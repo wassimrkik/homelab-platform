@@ -3,15 +3,17 @@ kind: Application
 metadata:
   name: ingress-nginx
   namespace: argocd
-  # deliberately NO resources-finalizer: deleting this app must not delete Argo CD
+  # deleting this Application also deletes the resources it deployed
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   sources:
-    - repoURL: https://github.com/kubernetes/ingress-nginx
+    - repoURL: https://kubernetes.github.io/ingress-nginx   # Helm chart repo, not the GitHub source repo
       chart: ingress-nginx
-      targetRevision: 4.15.1                 # same version as the bootstrap install
+      targetRevision: 4.15.1
       helm:
-        releaseName: ingress-nginx                   # same release name as the bootstrap install
+        releaseName: ingress-nginx
         valueFiles:
           - $values/infrastructure/ingress-nginx/values.yaml
     - repoURL: https://github.com/wassimrkik/homelab-platform
