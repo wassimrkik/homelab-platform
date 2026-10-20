@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rancher-compliance
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.rancher.io
+      chart: rancher-compliance
+      targetRevision: 110.2.0+up1.5.3
+      helm:
+        releaseName: rancher-compliance
+        valueFiles:
+          - $values/infrastructure/rancher-compliance/values.yaml
+    - repoURL: https://github.com/wassimrkik/homelab-platform
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: compliance-operator-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true
