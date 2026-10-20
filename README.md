@@ -74,6 +74,33 @@ With a single control plane node, the cluster is not highly available. Losing th
 - Squash merge only, keeping history linear.
 - The PR title becomes the commit message on `main`, so it must describe the change (for example `docs: add repo structure, README and .gitignore (PLAT-0)`).
 
+### Checks on every pull request
+
+Two GitHub Actions workflows run on every PR and on every push to `main`:
+
+| Workflow | Job | What it checks |
+| --- | --- | --- |
+| `gitleaks` | `gitleaks` | Secrets in the PR's commits (the whole history on `main`) |
+| `kubernetes` | `yamllint` | YAML syntax and style, using `.yamllint.yaml` |
+| `kubernetes` | `kubeconform` | Manifests in `apps/` and `clusters/` against the Kubernetes API schemas and the CRD catalog |
+| `kubernetes` | `helm-render` | Renders each Argo CD Helm Application with this repo's values files and validates the output |
+
+Make these jobs required status checks on `main`.
+
+### Local git hooks
+
+[lefthook](https://lefthook.dev) runs the same checks before they reach CI. Set it up once per clone:
+
+```bash
+brew install lefthook gitleaks yamllint kubeconform yq
+lefthook install
+```
+
+- **pre-commit:** gitleaks on staged changes, yamllint on staged YAML, kubeconform on staged manifests.
+- **pre-push:** gitleaks on the commits about to be pushed.
+
+Run the checks by hand with `lefthook run pre-commit`, `scripts/kubeconform.sh` or `scripts/helm-render.sh`. The helm-render script needs `helm` and `yq` and downloads the charts, so it runs in CI rather than in the hook.
+
 Manual `kubectl apply` is reserved for break-glass situations. Anything changed by hand should be committed back to Git afterwards so the cluster and the repo stay in sync.
 
 ## Day-to-day activities to practise
